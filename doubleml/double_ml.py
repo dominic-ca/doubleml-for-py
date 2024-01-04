@@ -670,7 +670,6 @@ class DoubleML(ABC):
         df_ci : pd.DataFrame
             A data frame with the confidence interval(s).
         """
-
         if not isinstance(joint, bool):
             raise TypeError('joint must be True or False. '
                             f'Got {str(joint)}.')
@@ -1940,3 +1939,4 @@ class DoubleML(ABC):
         }
         df_benchmark = pd.DataFrame(benchmark_dict, index=self._dml_data.d_cols)
         return df_benchmark
+
