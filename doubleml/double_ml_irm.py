@@ -11,7 +11,7 @@ from .double_ml_policytree import DoubleMLPolicyTree
 from .double_ml_data import DoubleMLData
 from .double_ml_score_mixins import LinearScoreMixin
 
-from ._utils import _dml_cv_predict, _get_cond_smpls, _dml_tune, _trimm, _normalize_ipw
+from ._utils import _dml_cv_predict, _get_cond_smpls, _dml_tune, _trimm, _discard, _normalize_ipw
 from ._utils_checks import _check_score, _check_trimming, _check_finite_predictions, _check_is_propensity, _check_integer
 
 
@@ -115,6 +115,7 @@ class DoubleMLIRM(LinearScoreMixin, DoubleML):
                  obj_dml_data,
                  ml_g,
                  ml_m,
+                 ps=None,
                  n_folds=5,
                  n_rep=1,
                  score='ATE',
@@ -160,7 +161,14 @@ class DoubleMLIRM(LinearScoreMixin, DoubleML):
         _check_trimming(self._trimming_rule, self._trimming_threshold)
 
         self._sensitivity_implemented = True
+        
+       
 
+    
+    
+    
+
+    
     @property
     def normalize_ipw(self):
         """
@@ -182,6 +190,8 @@ class DoubleMLIRM(LinearScoreMixin, DoubleML):
         """
         return self._trimming_threshold
 
+
+    
     def _initialize_ml_nuisance_params(self):
         valid_learner = ['ml_g0', 'ml_g1', 'ml_m']
         self._params = {learner: {key: [None] * self.n_rep for key in self._dml_data.d_cols}
@@ -255,7 +265,21 @@ class DoubleMLIRM(LinearScoreMixin, DoubleML):
                                 return_models=return_models)
         _check_finite_predictions(m_hat['preds'], self._learner['ml_m'], 'ml_m', smpls)
         _check_is_propensity(m_hat['preds'], self._learner['ml_m'], 'ml_m', smpls, eps=1e-12)
-        m_hat['preds'] = _trimm(m_hat['preds'], self.trimming_rule, self.trimming_threshold)
+        
+        
+        
+        
+        if self.trimming_rule == 'truncate': 
+            m_hat['preds'] = _trimm(m_hat['preds'], self.trimming_rule, self.trimming_threshold)
+            
+        elif self.trimming_rule == 'discard':
+            m_hat['preds'] = _discard(m_hat['preds'], self.trimming_rule, self.trimming_threshold)
+            #print("m_hat:",m_hat,"preds::",m_hat['preds'])
+            #m_hat=m_hat.dropna(subset=['preds'])
+            #print("m_hat:",m_hat,"preds::",m_hat['preds'])
+
+    
+            
 
         psi_a, psi_b = self._score_elements(y, d,
                                             g_hat0['preds'], g_hat1['preds'], m_hat['preds'],
@@ -272,8 +296,12 @@ class DoubleMLIRM(LinearScoreMixin, DoubleML):
                             'ml_g1': g_hat1['models'],
                             'ml_m': m_hat['models']}
                  }
+        
+        
 
         return psi_elements, preds
+    
+ 
 
     def _score_elements(self, y, d, g_hat0, g_hat1, m_hat, smpls):
 
@@ -290,6 +318,7 @@ class DoubleMLIRM(LinearScoreMixin, DoubleML):
                     m_hat[test_index] = _normalize_ipw(m_hat[test_index], d[test_index])
             else:
                 m_hat = _normalize_ipw(m_hat, d)
+
 
         # compute residuals
         u_hat0 = y - g_hat0
@@ -314,7 +343,6 @@ class DoubleMLIRM(LinearScoreMixin, DoubleML):
             psi_a, psi_b = self.score(y=y, d=d,
                                       g_hat0=g_hat0, g_hat1=g_hat1, m_hat=m_hat,
                                       smpls=smpls)
-
         return psi_a, psi_b
 
     def _sensitivity_element_est(self, preds):
@@ -519,3 +547,4 @@ class DoubleMLIRM(LinearScoreMixin, DoubleML):
         model = DoubleMLPolicyTree(orth_signal, depth=depth, features=features, **tree_params).fit()
 
         return model
+
