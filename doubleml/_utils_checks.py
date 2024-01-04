@@ -143,7 +143,7 @@ def _check_score(score, valid_score, allow_callable=True):
 
 
 def _check_trimming(trimming_rule, trimming_threshold):
-    valid_trimming_rule = ['truncate']
+    valid_trimming_rule = ['truncate','discard','none']
     if trimming_rule not in valid_trimming_rule:
         raise ValueError('Invalid trimming_rule ' + str(trimming_rule) + '. ' +
                          'Valid trimming_rule ' + ' or '.join(valid_trimming_rule) + '.')
@@ -226,3 +226,4 @@ def _check_benchmarks(benchmarks):
                 raise TypeError('benchmarks name must be of string type. '
                                 f'{str(benchmarks["name"][i])} of type {str(type(benchmarks["name"][i]))} was passed.')
     return
+
