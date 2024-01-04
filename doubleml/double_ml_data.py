@@ -234,6 +234,7 @@ class DoubleMLData(DoubleMLBaseData):
         x = check_array(x, ensure_2d=False, allow_nd=False,
                         force_all_finite=force_all_x_finite)
         d = check_array(d, ensure_2d=False, allow_nd=False)
+        print("dtype:",type(d))
         y = column_or_1d(y, warn=True)
 
         x = _assure_2d_array(x)
@@ -925,3 +926,4 @@ class DoubleMLClusterData(DoubleMLData):
     def _set_cluster_vars(self):
         assert_all_finite(self.data.loc[:, self.cluster_cols])
         self._cluster_vars = self.data.loc[:, self.cluster_cols]
+
