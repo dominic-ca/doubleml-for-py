@@ -187,6 +187,13 @@ def _trimm(preds, trimming_rule, trimming_threshold):
         preds[preds < trimming_threshold] = trimming_threshold
         preds[preds > 1 - trimming_threshold] = 1 - trimming_threshold
     return preds
+    
+    
+def _discard(preds, trimming_rule, trimming_threshold):
+    if trimming_rule == 'discard':
+        preds[preds < trimming_threshold] = np.nan
+        preds[preds > 1 - trimming_threshold] = np.nan
+    return preds
 
 
 def _normalize_ipw(propensity, treatment):
@@ -273,9 +280,16 @@ def _var_est(psi, psi_deriv, apply_cross_fitting, smpls, is_cluster_data,
             psi_deriv = psi_deriv[test_index]
             psi = psi[test_index]
             var_scaling_factor = len(test_index)
+            
 
-        J = np.mean(psi_deriv)
-        gamma_hat = np.mean(np.square(psi))
+        
+        Nnan = np.sum(np.isnan(psi))
+        var_scaling_factor = var_scaling_factor-Nnan
+        
+        J = np.mean(psi_deriv)   
+        gamma_hat = np.nanmean(np.square(psi))     
+        #gamma_hat =  np.divide(np.nansum(np.square(psi)),var_scaling_factor)
+       
 
     else:
         assert cluster_vars is not None
