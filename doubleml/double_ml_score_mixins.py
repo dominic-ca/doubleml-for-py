@@ -50,7 +50,7 @@ class LinearScoreMixin:
         # check whether we have cluster data and dml2
         is_dml2_and_cluster = self._is_cluster_data and (self.dml_procedure == 'dml2')
         if not is_dml2_and_cluster:
-            coef = - np.mean(psi_b) / np.mean(psi_a)
+            coef = - np.nanmean(psi_b) / np.mean(psi_a)
         # for cluster and dml2 we need the smpls and the scaling factors
         else:
             assert smpls is not None
@@ -213,3 +213,4 @@ class NonLinearScoreMixin:
                                       'No theta found such that the score function evaluates to a positive value.')
 
         return theta_hat
+
